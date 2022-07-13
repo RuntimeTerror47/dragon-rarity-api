@@ -8,5 +8,7 @@ dragons: [
     "rarity": "string",
   }
 ]
-Also, a secret key field can be added to request header to improve security
 ```
+
+Also, a secret key field can be added to request header to improve security
+
