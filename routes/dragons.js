@@ -7,7 +7,7 @@ const CONTRACT_ADDRESS =
 const RPC_URL = "https://rpc.uni.juno.deuslabs.fi";
 
 const WHITELIST_ADDRESS =
-    "juno16d2hnwykksalhjjgz3zefs2qg3ldxxhqsvms63uj2l5qydnp4vwsv565qk";
+    "juno1kjtwd7jqs9yyfl5sfmqvvp9rwdzzra50qs6jjsc0gudrtuah0a3sxajah5";
 const MAINNET_RPC = "https://rpc.juno-1.deuslabs.fi";
 
 const getDragonType = (id) => {
