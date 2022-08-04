@@ -4,7 +4,11 @@ var { CosmWasmClient } = require("@cosmjs/cosmwasm-stargate");
 
 const CONTRACT_ADDRESS =
     "juno100dkyna0r52pawt229xdsfzr29rxr9wf2f4xgapzn72aqcm905rqc93xgw";
-const RPC_URL = "https://rpc.juno.giansalex.dev";
+const RPC_URL = "https://rpc.uni.juno.deuslabs.fi";
+
+const WHITELIST_ADDRESS =
+    "juno16d2hnwykksalhjjgz3zefs2qg3ldxxhqsvms63uj2l5qydnp4vwsv565qk";
+const MAINNET_RPC = "https://rpc.juno-1.deuslabs.fi";
 
 const getDragonType = (id) => {
     let type = Number(id) % 5;
@@ -29,6 +33,16 @@ router.get("/:address", async function (req, res, next) {
         error = true;
     }
 
+    const client2 = await CosmWasmClient.connect(MAINNET_RPC);
+    try {
+        whitelistRes = await client2.queryContractSmart(WHITELIST_ADDRESS, {
+            Tokens: { owner: owner },
+        });
+        console.log(whitelistRes);
+    } catch (err) {
+        error = true;
+    }
+
     //Get Tokens
     if (error || !tokenRes || tokenRes.tokens.length === 0) {
         res.send(JSON.stringify({ dragons: [] }));
@@ -39,10 +53,17 @@ router.get("/:address", async function (req, res, next) {
             //     DragonInfo: { id: tokenRes.tokens[i] },
             // });
             // console.log(type);
-            dragonType = response.push({
+            response.push({
                 id: tokenRes.tokens[i],
                 imageUrl: "...",
                 rarity: getDragonType(tokenRes.tokens[i]),
+            });
+        }
+        if (whitelistRes.length !== 0) {
+            response.push({
+                id: whitelistRes.tokens[0].id,
+                imageUrl: "...",
+                rarity: "starter",
             });
         }
         res.send(JSON.stringify({ dragons: response }));
