@@ -38,13 +38,16 @@ router.get("/:address", async function (req, res, next) {
         whitelistRes = await client2.queryContractSmart(WHITELIST_ADDRESS, {
             Tokens: { owner: owner },
         });
-        console.log(whitelistRes);
     } catch (err) {
         error = true;
     }
 
     //Get Tokens
-    if (error || !tokenRes || tokenRes.tokens.length === 0) {
+    if (
+        error ||
+        !tokenRes ||
+        (tokenRes.tokens.length === 0 && whitelistRes.tokens.length === 0)
+    ) {
         res.send(JSON.stringify({ dragons: [] }));
     } else {
         let response = [];
@@ -59,9 +62,9 @@ router.get("/:address", async function (req, res, next) {
                 rarity: getDragonType(tokenRes.tokens[i]),
             });
         }
-        if (whitelistRes.length !== 0) {
+        if (whitelistRes.tokens.length !== 0) {
             response.push({
-                id: whitelistRes.tokens[0].id,
+                id: whitelistRes.tokens[0],
                 imageUrl: "...",
                 rarity: "starter",
             });
