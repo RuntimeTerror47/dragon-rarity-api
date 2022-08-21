@@ -36,9 +36,10 @@ router.get("/:address", async function (req, res, next) {
     try {
         const client = await CosmWasmClient.connect(RPC_URL);
 
-        tokenRes = await client.queryContractSmart(DRAGON_CONTRACT, {
-            RangeUserDragons: { start_after: 0, owner: owner },
+        let res = await client.queryContractSmart(DRAGON_CONTRACT, {
+            RangeUserDragons: { start_after: 0, limit: 30, owner: owner },
         });
+        tokenRes = res;
     } catch (err) {
         error = true;
     }
@@ -62,6 +63,7 @@ router.get("/:address", async function (req, res, next) {
         res.send(JSON.stringify({ dragons: [] }));
     } else {
         let response = [];
+
         for (let i = 0; i < tokenRes.dragons.length; i++) {
             if (!tokenRes.dragons[i].is_staked) {
                 let rarity = tokenRes.dragons[i].kind;
