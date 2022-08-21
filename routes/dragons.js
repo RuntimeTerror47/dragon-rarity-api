@@ -2,39 +2,50 @@ var express = require("express");
 var router = express.Router();
 var { CosmWasmClient } = require("@cosmjs/cosmwasm-stargate");
 
-const CONTRACT_ADDRESS =
-    "juno100dkyna0r52pawt229xdsfzr29rxr9wf2f4xgapzn72aqcm905rqc93xgw";
-const RPC_URL = "https://rpc.uni.juno.deuslabs.fi";
+const RPC_URL = "https://rpc-juno.itastakers.com";
+
+const DRAGON_CONTRACT =
+    "juno102ez6q5vqgh0a56rttvl5hwx2adp7hn2lxnhygm93exkkac6hrkstlh5mw";
 
 const WHITELIST_ADDRESS =
     "juno1kjtwd7jqs9yyfl5sfmqvvp9rwdzzra50qs6jjsc0gudrtuah0a3sxajah5";
 const MAINNET_RPC = "https://rpc.juno-1.deuslabs.fi";
 
-const getDragonType = (id) => {
-    let type = Number(id) % 5;
-    if (type === 0) return "Legendary";
-    if (type === 2) return "Uncommon";
-    if (type === 3) return "Rare";
-    if (type === 4) return "Epic";
-    else return "Common";
-};
+let common_img =
+    "https://bafybeiacxf7hsoqkyhg6fqa6ktnxvtoni32tyuqd6w2mgpk7vosxg4y2ve.ipfs.nftstorage.link/1.png";
+let uncommon_img =
+    "https://bafybeiacxf7hsoqkyhg6fqa6ktnxvtoni32tyuqd6w2mgpk7vosxg4y2ve.ipfs.nftstorage.link/2.png";
+let rare_img =
+    "https://bafybeiacxf7hsoqkyhg6fqa6ktnxvtoni32tyuqd6w2mgpk7vosxg4y2ve.ipfs.nftstorage.link/3.png";
+let epic_img =
+    "https://bafybeiacxf7hsoqkyhg6fqa6ktnxvtoni32tyuqd6w2mgpk7vosxg4y2ve.ipfs.nftstorage.link/4.png";
+let legendary_img =
+    "https://bafybeiacxf7hsoqkyhg6fqa6ktnxvtoni32tyuqd6w2mgpk7vosxg4y2ve.ipfs.nftstorage.link/5.png";
 
 /* GET users listing. */
 router.get("/:address", async function (req, res, next) {
     let owner = req.params["address"];
     let tokenRes;
     let error = false;
-    const client = await CosmWasmClient.connect(RPC_URL);
+    let common = false;
+    let uncommon = false;
+    let rare = false;
+    let epic = false;
+    let legendary = false;
+
     try {
-        tokenRes = await client.queryContractSmart(CONTRACT_ADDRESS, {
-            Tokens: { owner: owner },
+        const client = await CosmWasmClient.connect(RPC_URL);
+
+        tokenRes = await client.queryContractSmart(DRAGON_CONTRACT, {
+            RangeUserDragons: { start_after: 0, owner: owner },
         });
     } catch (err) {
         error = true;
     }
 
-    const client2 = await CosmWasmClient.connect(MAINNET_RPC);
     try {
+        const client2 = await CosmWasmClient.connect(MAINNET_RPC);
+
         whitelistRes = await client2.queryContractSmart(WHITELIST_ADDRESS, {
             Tokens: { owner: owner },
         });
@@ -46,26 +57,57 @@ router.get("/:address", async function (req, res, next) {
     if (
         error ||
         !tokenRes ||
-        (tokenRes.tokens.length === 0 && whitelistRes.tokens.length === 0)
+        (tokenRes.dragons.length === 0 && whitelistRes.tokens.length === 0)
     ) {
         res.send(JSON.stringify({ dragons: [] }));
     } else {
         let response = [];
-        for (let i = 0; i < tokenRes.tokens.length; i++) {
-            // let type = await client.queryContractSmart(CONTRACT_ADDRESS, {
-            //     DragonInfo: { id: tokenRes.tokens[i] },
-            // });
-            // console.log(type);
-            response.push({
-                id: tokenRes.tokens[i],
-                imageUrl: "...",
-                rarity: getDragonType(tokenRes.tokens[i]),
-            });
+        for (let i = 0; i < tokenRes.dragons.length; i++) {
+            if (!tokenRes.dragons[i].is_staked) {
+                let rarity = tokenRes.dragons[i].kind;
+
+                if (rarity == "common" && !common) {
+                    response.push({
+                        id: tokenRes.dragons[i].token_id,
+                        imageUrl: common_img,
+                        rarity: rarity,
+                    });
+                    common = true;
+                } else if (rarity == "uncommon" && !uncommon) {
+                    response.push({
+                        id: tokenRes.dragons[i].token_id,
+                        imageUrl: uncommon_img,
+                        rarity: rarity,
+                    });
+                    uncommon = true;
+                } else if (rarity == "rare" && !rare) {
+                    response.push({
+                        id: tokenRes.dragons[i].token_id,
+                        imageUrl: rare_img,
+                        rarity: rarity,
+                    });
+                    rare = true;
+                } else if (rarity == "epic" && !epic) {
+                    response.push({
+                        id: tokenRes.dragons[i].token_id,
+                        imageUrl: epic_img,
+                        rarity: rarity,
+                    });
+                    epic = true;
+                } else if (rarity == "legendary" && !legendary) {
+                    response.push({
+                        id: tokenRes.dragons[i].token_id,
+                        imageUrl: legendary_img,
+                        rarity: rarity,
+                    });
+                    legendary = true;
+                }
+            }
         }
         if (whitelistRes.tokens.length !== 0) {
             response.push({
                 id: whitelistRes.tokens[0],
-                imageUrl: "...",
+                imageUrl: "",
                 rarity: "starter",
             });
         }
