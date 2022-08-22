@@ -37,7 +37,7 @@ router.get("/:address", async function (req, res, next) {
         const client = await CosmWasmClient.connect(RPC_URL);
 
         let res = await client.queryContractSmart(DRAGON_CONTRACT, {
-            RangeUserDragons: { start_after: 0, limit: 30, owner: owner },
+            RangeUserDragons: { start_after: 0, owner: owner },
         });
         tokenRes = res;
     } catch (err) {
