@@ -25,7 +25,7 @@ let legendary_img =
 /* GET users listing. */
 router.get("/:address", async function (req, res, next) {
     let owner = req.params["address"];
-    let tokenRes;
+    let tokenRes = [];
     let error = false;
     let common = false;
     let uncommon = false;
@@ -40,11 +40,14 @@ router.get("/:address", async function (req, res, next) {
             Tokens: { owner: owner },
         });
         let limit = res.tokens.length;
+        console.log(limit);
 
-        let res2 = await client.queryContractSmart(DRAGON_CONTRACT, {
-            RangeUserDragons: { limit: limit, owner: owner },
-        });
-        tokenRes = res2;
+        for (let i = 0; i < limit; i++) {
+            let res2 = await client.queryContractSmart(DRAGON_CONTRACT, {
+                NftInfo: { token_id: res.tokens[i] },
+            });
+            tokenRes.push(res2);
+        }
     } catch (err) {
         error = true;
     }
@@ -63,52 +66,45 @@ router.get("/:address", async function (req, res, next) {
     if (
         error ||
         !tokenRes ||
-        (tokenRes.dragons.length === 0 && whitelistRes.tokens.length === 0)
+        (tokenRes.length === 0 && whitelistRes.tokens.length === 0)
     ) {
         res.send(JSON.stringify({ dragons: [] }));
     } else {
         let response = [];
 
-        for (let i = 0; i < tokenRes.dragons.length; i++) {
-            if (!tokenRes.dragons[i].is_staked) {
-                let rarity = tokenRes.dragons[i].kind;
+        for (let i = 0; i < tokenRes.length; i++) {
+            let rarity = tokenRes[i].extension.attributes[0].value;
 
-                if (rarity == "common" && !common) {
-                    response.push({
-                        id: tokenRes.dragons[i].token_id,
-                        imageUrl: common_img,
-                        rarity: rarity,
-                    });
-                    common = true;
-                } else if (rarity == "uncommon" && !uncommon) {
-                    response.push({
-                        id: tokenRes.dragons[i].token_id,
-                        imageUrl: uncommon_img,
-                        rarity: rarity,
-                    });
-                    uncommon = true;
-                } else if (rarity == "rare" && !rare) {
-                    response.push({
-                        id: tokenRes.dragons[i].token_id,
-                        imageUrl: rare_img,
-                        rarity: rarity,
-                    });
-                    rare = true;
-                } else if (rarity == "epic" && !epic) {
-                    response.push({
-                        id: tokenRes.dragons[i].token_id,
-                        imageUrl: epic_img,
-                        rarity: rarity,
-                    });
-                    epic = true;
-                } else if (rarity == "legendary" && !legendary) {
-                    response.push({
-                        id: tokenRes.dragons[i].token_id,
-                        imageUrl: legendary_img,
-                        rarity: rarity,
-                    });
-                    legendary = true;
-                }
+            if (rarity == "common" && !common) {
+                response.push({
+                    imageUrl: common_img,
+                    rarity: rarity,
+                });
+                common = true;
+            } else if (rarity == "uncommon" && !uncommon) {
+                response.push({
+                    imageUrl: uncommon_img,
+                    rarity: rarity,
+                });
+                uncommon = true;
+            } else if (rarity == "rare" && !rare) {
+                response.push({
+                    imageUrl: rare_img,
+                    rarity: rarity,
+                });
+                rare = true;
+            } else if (rarity == "epic" && !epic) {
+                response.push({
+                    imageUrl: epic_img,
+                    rarity: rarity,
+                });
+                epic = true;
+            } else if (rarity == "legendary" && !legendary) {
+                response.push({
+                    imageUrl: legendary_img,
+                    rarity: rarity,
+                });
+                legendary = true;
             }
         }
         if (whitelistRes.tokens.length !== 0) {
