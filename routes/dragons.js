@@ -37,14 +37,13 @@ router.get("/:address", async function (req, res, next) {
         const client = await CosmWasmClient.connect(RPC_URL);
 
         let res = await client.queryContractSmart(DRAGON_CONTRACT, {
-            Tokens: { owner: owner },
+            Tokens: { owner: owner, limit: 100 },
         });
         let limit = res.tokens.length;
-        console.log(limit);
 
         for (let i = 0; i < limit; i++) {
             let res2 = await client.queryContractSmart(DRAGON_CONTRACT, {
-                NftInfo: { token_id: res.tokens[i] },
+                DragonInfo: { id: res.tokens[i] },
             });
             tokenRes.push(res2);
         }
@@ -73,43 +72,45 @@ router.get("/:address", async function (req, res, next) {
         let response = [];
 
         for (let i = 0; i < tokenRes.length; i++) {
-            let rarity = tokenRes[i].extension.attributes[0].value;
+            let staked = tokenRes[i].is_staked;
+            let rarity = tokenRes[i].kind;
 
-            if (rarity == "common" && !common) {
-                response.push({
-                    imageUrl: common_img,
-                    rarity: rarity,
-                });
-                common = true;
-            } else if (rarity == "uncommon" && !uncommon) {
-                response.push({
-                    imageUrl: uncommon_img,
-                    rarity: rarity,
-                });
-                uncommon = true;
-            } else if (rarity == "rare" && !rare) {
-                response.push({
-                    imageUrl: rare_img,
-                    rarity: rarity,
-                });
-                rare = true;
-            } else if (rarity == "epic" && !epic) {
-                response.push({
-                    imageUrl: epic_img,
-                    rarity: rarity,
-                });
-                epic = true;
-            } else if (rarity == "legendary" && !legendary) {
-                response.push({
-                    imageUrl: legendary_img,
-                    rarity: rarity,
-                });
-                legendary = true;
+            if (!staked) {
+                if (rarity == "common" && !common) {
+                    response.push({
+                        imageUrl: common_img,
+                        rarity: rarity,
+                    });
+                    common = true;
+                } else if (rarity == "uncommon" && !uncommon) {
+                    response.push({
+                        imageUrl: uncommon_img,
+                        rarity: rarity,
+                    });
+                    uncommon = true;
+                } else if (rarity == "rare" && !rare) {
+                    response.push({
+                        imageUrl: rare_img,
+                        rarity: rarity,
+                    });
+                    rare = true;
+                } else if (rarity == "epic" && !epic) {
+                    response.push({
+                        imageUrl: epic_img,
+                        rarity: rarity,
+                    });
+                    epic = true;
+                } else if (rarity == "legendary" && !legendary) {
+                    response.push({
+                        imageUrl: legendary_img,
+                        rarity: rarity,
+                    });
+                    legendary = true;
+                }
             }
         }
         if (whitelistRes.tokens.length !== 0) {
             response.push({
-                id: whitelistRes.tokens[0],
                 imageUrl: "",
                 rarity: "starter",
             });
