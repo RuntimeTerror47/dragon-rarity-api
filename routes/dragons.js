@@ -2,14 +2,14 @@ var express = require("express");
 var router = express.Router();
 var { CosmWasmClient } = require("@cosmjs/cosmwasm-stargate");
 
-const RPC_URL = "https://rpc-juno.ecostake.com";
+const RPC_URL = "https://rpc-juno.mib.tech";
 
 const DRAGON_CONTRACT =
     "juno102ez6q5vqgh0a56rttvl5hwx2adp7hn2lxnhygm93exkkac6hrkstlh5mw";
 
 const WHITELIST_ADDRESS =
     "juno1kjtwd7jqs9yyfl5sfmqvvp9rwdzzra50qs6jjsc0gudrtuah0a3sxajah5";
-const MAINNET_RPC = "https://rpc.junomint.com";
+const MAINNET_RPC = "https://rpc-juno.mib.tech";
 
 let common_img =
     "https://bafybeiacxf7hsoqkyhg6fqa6ktnxvtoni32tyuqd6w2mgpk7vosxg4y2ve.ipfs.nftstorage.link/1.png";
